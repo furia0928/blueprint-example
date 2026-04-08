@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>상품 목록 - PC</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f9f9f9; padding: 24px; }
+    .search-bar {
+      background: #fff; border: 1px solid #ddd; border-radius: 8px;
+      padding: 12px 16px; font-size: 14px; width: 100%; margin-bottom: 16px;
+    }
+    .filter-chips { display: flex; gap: 8px; margin-bottom: 24px; }
+    .chip {
+      background: #f0f0f0; border: 1px solid #ddd; border-radius: 16px;
+      padding: 4px 12px; font-size: 12px; color: #666;
+    }
+    .chip.active { background: #C70036; color: #fff; border-color: #C70036; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .card {
+      background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden;
+    }
+    .card-img { width: 100%; aspect-ratio: 1; background: #e8e8e8; }
+    .card-body { padding: 12px; }
+    .card-title { font-size: 13px; color: #333; margin-bottom: 4px; line-height: 1.4; }
+    .card-price { font-size: 15px; font-weight: 700; color: #111; }
+    .card-original { font-size: 12px; color: #999; text-decoration: line-through; margin-right: 4px; }
+    .card-rating { font-size: 11px; color: #999; margin-top: 4px; }
+
+    [data-feature] { position: relative; }
+  </style>
+</head>
+<body>
+  <div data-feature="SEARCH">
+    <input class="search-bar" type="text" placeholder="상품명, 브랜드명으로 검색" readonly>
+  </div>
+
+  <div data-feature="FILTER">
+    <div class="filter-chips">
+      <span class="chip active">전체</span>
+      <span class="chip">의류</span>
+      <span class="chip">전자기기</span>
+      <span class="chip">생활용품</span>
+      <span class="chip">식품</span>
+    </div>
+  </div>
+
+  <div data-feature="LIST">
+    <div class="grid">
+      <div class="card">
+        <div class="card-img"></div>
+        <div class="card-body">
+          <div class="card-title">프리미엄 무선 이어폰 Pro Max</div>
+          <div><span class="card-original">89,000</span><span class="card-price">69,000원</span></div>
+          <div class="card-rating">4.5 (128)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"></div>
+        <div class="card-body">
+          <div class="card-title">오가닉 코튼 맨투맨</div>
+          <div class="card-price">45,000원</div>
+          <div class="card-rating">4.2 (64)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"></div>
+        <div class="card-body">
+          <div class="card-title">스테인리스 텀블러 500ml</div>
+          <div><span class="card-original">32,000</span><span class="card-price">24,900원</span></div>
+          <div class="card-rating">4.8 (256)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"></div>
+        <div class="card-body">
+          <div class="card-title">프로틴 에너지바 12개입</div>
+          <div class="card-price">18,900원</div>
+          <div class="card-rating">4.0 (32)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"></div>
+        <div class="card-body">
+          <div class="card-title">미니멀 데스크 램프</div>
+          <div class="card-price">55,000원</div>
+          <div class="card-rating">4.6 (89)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"></div>
+        <div class="card-body">
+          <div class="card-title">초경량 접이식 우산</div>
+          <div><span class="card-original">25,000</span><span class="card-price">19,900원</span></div>
+          <div class="card-rating">4.3 (156)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"></div>
+        <div class="card-body">
+          <div class="card-title">블루투스 키보드</div>
+          <div class="card-price">79,000원</div>
+          <div class="card-rating">4.7 (203)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"></div>
+        <div class="card-body">
+          <div class="card-title">유기농 그래놀라 세트</div>
+          <div class="card-price">28,500원</div>
+          <div class="card-rating">4.1 (47)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

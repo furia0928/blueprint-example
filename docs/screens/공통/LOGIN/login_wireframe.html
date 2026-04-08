@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f9f9f9; display: flex; justify-content: center; padding: 80px 24px; }
+    .container { width: 100%; max-width: 400px; }
+    .logo { text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 32px; color: #C70036; }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; color: #333; }
+    .field input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .btn-login { width: 100%; padding: 12px; background: #C70036; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 4px; }
+    .forgot { text-align: center; margin-top: 12px; font-size: 13px; color: #999; }
+    .forgot a { color: #C70036; text-decoration: none; }
+    .divider { display: flex; align-items: center; margin: 24px 0; gap: 12px; }
+    .divider span { font-size: 12px; color: #999; }
+    .divider::before, .divider::after { content: ""; flex: 1; border-top: 1px solid #eee; }
+    .social { display: flex; flex-direction: column; gap: 8px; }
+    .social-btn { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; text-align: center; background: #fff; cursor: pointer; }
+    [data-feature] { position: relative; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Blueprint</div>
+    <div data-feature="EMAIL_LOGIN">
+      <div class="field">
+        <label>이메일</label>
+        <input type="email" placeholder="name@example.com" readonly>
+      </div>
+      <div class="field">
+        <label>비밀번호</label>
+        <input type="password" placeholder="8자 이상" readonly>
+      </div>
+      <button class="btn-login">로그인</button>
+    </div>
+    <div data-feature="FIND_PW">
+      <div class="forgot"><a href="#">비밀번호를 잊으셨나요?</a></div>
+    </div>
+    <div class="divider"><span>또는</span></div>
+    <div data-feature="SOCIAL_LOGIN">
+      <div class="social">
+        <button class="social-btn">카카오로 로그인</button>
+        <button class="social-btn">네이버로 로그인</button>
+        <button class="social-btn">Google로 로그인</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
