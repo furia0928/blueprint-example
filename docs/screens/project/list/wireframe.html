@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blueprint — 프로젝트 목록</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://blueprint-platform-pink.vercel.app/blueprint/v1/tailwind-config.js"></script>
+    <script src="https://blueprint-platform-pink.vercel.app/blueprint/v1/bp-components.js"></script>
+    <link rel="stylesheet" href="https://blueprint-platform-pink.vercel.app/blueprint/v1/base.css" />
+
+    <!--
+      Blueprint / 프로젝트 목록
+      - SSOT: docs/screens/project/list/screen.md + docs/features/PROJECT.md
+      - 와이어프레임 HTML은 두 SSOT의 파생물.
+      - 각 섹션의 bp-description은 명세에서 파생된 description으로
+        우측 레일에 자동 이동되어 HTML만 열어도 의미를 파악할 수 있게 한다.
+    -->
+  </head>
+  <body>
+    <bp-page>
+      <!-- ============================================================ -->
+      <!-- 헤더                                                         -->
+      <!-- ============================================================ -->
+      <bp-page-header>
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center gap-2">
+            <bp-icon name="layers" size="md"></bp-icon>
+            <span class="font-semibold">Blueprint</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <bp-button variant="ghost" size="icon" aria-label="알림">
+              <bp-icon name="bell" size="sm"></bp-icon>
+            </bp-button>
+            <bp-avatar size="sm" data-element="프로필 아바타">
+              <bp-avatar-fallback>JS</bp-avatar-fallback>
+            </bp-avatar>
+          </div>
+        </div>
+      </bp-page-header>
+
+      <bp-page-content>
+        <!-- ============================================================ -->
+        <!-- 1) 페이지 타이틀 + 새 프로젝트 액션                          -->
+        <!-- ============================================================ -->
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-2xl font-semibold">프로젝트</h1>
+
+          <bp-section data-feature="PROJECT__CREATE" data-label="새 프로젝트 생성">
+            <bp-description>
+              <bp-description-element name="새 프로젝트 버튼">
+                클릭 시 [프로젝트 생성 다이얼로그](./dialog_create.md)가 열린다.<br />
+                · GitHub App 이미 설치됨 → Step 1 저장소 선택<br />
+                · GitHub App 미설치 → Step 1 설치 유도<br />
+                · 저장소 선택 후 Step 2 이름 입력 → 프로젝트 생성 → 상세 페이지로 자동 이동
+              </bp-description-element>
+              <bp-description-note>
+                <li>버튼 위치(우상단 vs 빈 상태 카드 내부) 결정 — 빈 상태와의 일관성 확인 필요</li>
+              </bp-description-note>
+            </bp-description>
+
+            <bp-button variant="default" data-element="새 프로젝트 버튼">
+              <bp-icon name="plus" size="sm"></bp-icon>
+              새 프로젝트
+            </bp-button>
+          </bp-section>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 2) 프로젝트 카드 그리드                                       -->
+        <!-- ============================================================ -->
+        <bp-section data-feature="PROJECT__INFO" data-label="프로젝트 카드 그리드">
+          <!--
+            상태 트리:
+              기본 (프로젝트 있음) ← DEFAULT
+              로딩 중 (alt)
+              빈 목록 (alt)
+              GitHub API 에러 (alt)
+          -->
+          <bp-description>
+            <bp-description-element name="즐겨찾기 토글">
+              별 아이콘으로 즐겨찾기 토글.<br />
+              · 사용자별 독립 — 한 사용자의 즐겨찾기는 다른 사용자에게 영향을 주지 않음<br />
+              · 즐겨찾기된 프로젝트는 그리드 상단에 정렬<br />
+              · 저장소 에러 카드는 토글 비활성
+            </bp-description-element>
+            <bp-description-element name="프로젝트명">
+              프로젝트 표시명. 기본값은 저장소명, 이후 사용자가 자유롭게 변경 가능.<br />
+              · 비어 있을 수 없음<br />
+              · 최대 50자 이내 (TODO: 디자인 확인 필요)
+            </bp-description-element>
+            <bp-description-element name="GitHub 저장소">
+              `owner/repo` 형식. 한 번 연결되면 변경 불가.<br />
+              하나의 GitHub 저장소는 하나의 프로젝트에만 연결 (중복 연결 불가).
+            </bp-description-element>
+            <bp-description-element name="화면 수">
+              GitHub 디렉토리 구조 파싱으로 계산 (캐싱 적용).<br />
+              `*screen*.md` + `*wireframe*.html` 한 쌍이 있어야 유효 화면으로 카운트.
+            </bp-description-element>
+            <bp-description-element name="미해결 코멘트 수">
+              `comments` 테이블에서 `status = 'open'` 카운트.<br />
+              버전 발행 시 해결된 코멘트는 해당 버전에 귀속, 미해결은 latest에 잔류.
+            </bp-description-element>
+            <bp-description-element name="예제 뱃지" data-show="기본">
+              예제 저장소(`blueprint-emotion/blueprint-example`)를 fork한 프로젝트에만 표시.<br />
+              fork 기반이라 코멘트(GitHub Issue)가 사용자별 완전 격리됨.
+            </bp-description-element>
+            <bp-description-element name="저장소 에러" data-show="기본">
+              GitHub 저장소가 삭제되었거나 접근 권한이 사라진 경우 카드 내부에 안내 표시.<br />
+              · 카드 클릭 비활성 (진입 불가)<br />
+              · 즐겨찾기 토글 비활성<br />
+              · 추후 "프로젝트 정리" 액션 제공 검토
+            </bp-description-element>
+            <bp-description-note>
+              <li>저장소 에러 카드의 처리 정책 — 자동 숨김 vs 수동 정리</li>
+              <li>그리드 컬럼 수 — PC 3컬럼 / 태블릿 2컬럼 / 모바일 1컬럼 (현재 적용)</li>
+            </bp-description-note>
+          </bp-description>
+
+          <!-- 기본: 카드 그리드 -->
+          <div data-hide="로딩 중, 빈 목록, GitHub API 에러" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- 카드 1: 즐겨찾기된 프로젝트 -->
+            <bp-card>
+              <bp-card-header>
+                <bp-card-action>
+                  <bp-button variant="ghost" size="icon" aria-label="즐겨찾기 해제" data-element="즐겨찾기 토글">
+                    <bp-icon name="star" size="sm" data-fill="true"></bp-icon>
+                  </bp-button>
+                </bp-card-action>
+                <bp-card-title data-element="프로젝트명">commerce-app</bp-card-title>
+                <bp-card-description data-element="GitHub 저장소">acme-corp/commerce-app</bp-card-description>
+              </bp-card-header>
+              <bp-card-content>
+                <div class="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span data-element="화면 수" class="inline-flex items-center gap-1">
+                    <bp-icon name="layout" size="xs"></bp-icon>
+                    12 화면
+                  </span>
+                  <span data-element="미해결 코멘트 수" class="inline-flex items-center gap-1">
+                    <bp-icon name="message-circle" size="xs"></bp-icon>
+                    5 미해결
+                  </span>
+                </div>
+              </bp-card-content>
+            </bp-card>
+
+            <!-- 카드 2: 예제 프로젝트 -->
+            <bp-card>
+              <bp-card-header>
+                <bp-card-action>
+                  <bp-button variant="ghost" size="icon" aria-label="즐겨찾기 추가" data-element="즐겨찾기 토글">
+                    <bp-icon name="star" size="sm"></bp-icon>
+                  </bp-button>
+                </bp-card-action>
+                <bp-card-title>
+                  <span data-element="프로젝트명">blueprint-example</span>
+                  <bp-badge variant="secondary" class="ml-2" data-element="예제 뱃지">예제</bp-badge>
+                </bp-card-title>
+                <bp-card-description data-element="GitHub 저장소">my-user/blueprint-example</bp-card-description>
+              </bp-card-header>
+              <bp-card-content>
+                <div class="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span data-element="화면 수" class="inline-flex items-center gap-1">
+                    <bp-icon name="layout" size="xs"></bp-icon>
+                    8 화면
+                  </span>
+                  <span data-element="미해결 코멘트 수" class="inline-flex items-center gap-1">
+                    <bp-icon name="message-circle" size="xs"></bp-icon>
+                    0 미해결
+                  </span>
+                </div>
+              </bp-card-content>
+            </bp-card>
+
+            <!-- 카드 3: 저장소 삭제된 에러 상태 -->
+            <bp-card>
+              <bp-card-header>
+                <bp-card-action>
+                  <bp-button variant="ghost" size="icon" aria-label="즐겨찾기" disabled>
+                    <bp-icon name="star" size="sm"></bp-icon>
+                  </bp-button>
+                </bp-card-action>
+                <bp-card-title data-element="프로젝트명">legacy-admin</bp-card-title>
+                <bp-card-description data-element="GitHub 저장소">acme-corp/legacy-admin</bp-card-description>
+              </bp-card-header>
+              <bp-card-content>
+                <bp-alert variant="destructive" data-element="저장소 에러">
+                  <bp-alert-title>저장소를 찾을 수 없습니다</bp-alert-title>
+                  <bp-alert-description>GitHub에서 저장소가 삭제되었거나 접근 권한이 없습니다.</bp-alert-description>
+                </bp-alert>
+              </bp-card-content>
+            </bp-card>
+          </div>
+
+          <!-- 로딩 상태: 스켈레톤 -->
+          <div data-show="로딩 중" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <bp-card>
+              <bp-card-header>
+                <bp-skeleton class="h-5 w-32"></bp-skeleton>
+                <bp-skeleton class="h-4 w-40 mt-2"></bp-skeleton>
+              </bp-card-header>
+              <bp-card-content>
+                <bp-skeleton class="h-4 w-48"></bp-skeleton>
+              </bp-card-content>
+            </bp-card>
+            <bp-card>
+              <bp-card-header>
+                <bp-skeleton class="h-5 w-28"></bp-skeleton>
+                <bp-skeleton class="h-4 w-36 mt-2"></bp-skeleton>
+              </bp-card-header>
+              <bp-card-content>
+                <bp-skeleton class="h-4 w-44"></bp-skeleton>
+              </bp-card-content>
+            </bp-card>
+            <bp-card>
+              <bp-card-header>
+                <bp-skeleton class="h-5 w-36"></bp-skeleton>
+                <bp-skeleton class="h-4 w-44 mt-2"></bp-skeleton>
+              </bp-card-header>
+              <bp-card-content>
+                <bp-skeleton class="h-4 w-40"></bp-skeleton>
+              </bp-card-content>
+            </bp-card>
+          </div>
+
+          <!-- 빈 상태: 예제 안내 -->
+          <div data-show="빈 목록" class="flex justify-center py-12">
+            <bp-empty class="max-w-md">
+              <bp-empty-media>
+                <bp-icon name="folder-plus" size="xl"></bp-icon>
+              </bp-empty-media>
+              <bp-empty-title>아직 프로젝트가 없습니다</bp-empty-title>
+              <bp-empty-description>
+                예제 프로젝트로 체험해보거나, 새 프로젝트를 생성하여 팀의 와이어프레임을 시작하세요.
+              </bp-empty-description>
+              <bp-empty-content>
+                <div class="flex gap-2">
+                  <bp-button variant="outline">
+                    <bp-icon name="sparkles" size="sm"></bp-icon>
+                    예제 보기
+                  </bp-button>
+                  <bp-button variant="default">
+                    <bp-icon name="plus" size="sm"></bp-icon>
+                    새 프로젝트
+                  </bp-button>
+                </div>
+              </bp-empty-content>
+            </bp-empty>
+          </div>
+
+          <!-- GitHub API 에러 -->
+          <div data-show="GitHub API 에러" class="py-12">
+            <bp-alert variant="destructive">
+              <bp-alert-title>저장소 정보를 불러올 수 없습니다</bp-alert-title>
+              <bp-alert-description>
+                GitHub API에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요.
+              </bp-alert-description>
+            </bp-alert>
+            <div class="mt-4 flex justify-center">
+              <bp-button variant="outline">
+                <bp-icon name="refresh-cw" size="sm"></bp-icon>
+                다시 시도
+              </bp-button>
+            </div>
+          </div>
+        </bp-section>
+      </bp-page-content>
+    </bp-page>
+
+    <bp-screen-description>
+      <bp-description-purpose>
+        사용자가 참여 중인 프로젝트를 한눈에 보고 진입하거나 새로 생성한다.
+      </bp-description-purpose>
+      <bp-description-rules>
+        <li>GitHub collaborator인 저장소와 매칭되는 프로젝트만 노출 (public이어도 collaborator 아니면 미표시)</li>
+        <li>즐겨찾기 상태는 사용자별이며, 다른 사용자에게 영향이 없다</li>
+        <li>정렬: 즐겨찾기 우선 → 생성일 내림차순</li>
+        <li>프로젝트 0개일 때만 예제 안내가 노출. fork 완료 후에는 일반 목록으로 전환</li>
+        <li>헤더 프로필 아바타 클릭 시 [프로필 설정 시트](../../common/sheet_profile.md) 열림</li>
+        <li>프로젝트 카드 클릭 시 `/projects/[id]`로 이동, 첫 번째 화면으로 자동 리다이렉트</li>
+      </bp-description-rules>
+    </bp-screen-description>
+  </body>
+</html>

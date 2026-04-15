@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blueprint — 화면 상세</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://blueprint-platform-pink.vercel.app/blueprint/v1/tailwind-config.js"></script>
+    <script src="https://blueprint-platform-pink.vercel.app/blueprint/v1/bp-components.js"></script>
+    <link rel="stylesheet" href="https://blueprint-platform-pink.vercel.app/blueprint/v1/base.css" />
+
+    <!--
+      Blueprint / 화면 상세 (project/detail)
+      - SSOT: docs/screens/project/detail/screen.md
+              + area_top-bar.md, area_file-tree.md, area_viewer.md
+              + features/WIREFRAME.md, COMMENT.md, VERSION.md
+      - 레이아웃: bp-page → bp-page-header(top bar) + bp-page-content(2-col)
+      - 코멘트 시트는 별도 와이어프레임(sheet_comments) 작성 예정
+    -->
+  </head>
+  <body>
+    <bp-page>
+      <!-- ============================================================ -->
+      <!-- 탑바 (area_top-bar) — bp-page-header 슬롯                    -->
+      <!-- ============================================================ -->
+      <bp-page-header class="!py-2 px-4">
+        <div class="flex items-center justify-between gap-4 h-10">
+          <!-- 좌: 사이드바 토글 + 브레드크럼 -->
+          <div class="flex items-center gap-3 min-w-0">
+            <bp-button variant="ghost" size="icon" aria-label="사이드바 토글" data-element="사이드바 토글">
+              <bp-icon name="panel-left" size="sm"></bp-icon>
+            </bp-button>
+            <bp-breadcrumb data-element="브레드크럼">
+              <bp-breadcrumb-list>
+                <bp-breadcrumb-item><bp-breadcrumb-link href="#">상품</bp-breadcrumb-link></bp-breadcrumb-item>
+                <bp-breadcrumb-separator></bp-breadcrumb-separator>
+                <bp-breadcrumb-item><bp-breadcrumb-link href="#">PRODUCT-LIST</bp-breadcrumb-link></bp-breadcrumb-item>
+                <bp-breadcrumb-separator></bp-breadcrumb-separator>
+                <bp-breadcrumb-item><bp-breadcrumb-page>wireframe.html</bp-breadcrumb-page></bp-breadcrumb-item>
+              </bp-breadcrumb-list>
+            </bp-breadcrumb>
+          </div>
+
+          <!-- 우: 💬 코멘트 + 버전 + 발행 + 설정 -->
+          <div class="flex items-center gap-2 shrink-0">
+            <!--
+              💬 코멘트 버튼 — data-state-ref로 뷰어 섹션(WIREFRAME__RENDERING)의
+              상태를 따라간다. DOM은 탑바 자연 위치에 두고, 가시성만 뷰어의
+              "HTML 뷰어" 상태에 종속. 실 플랫폼(viewer-toolbar.tsx)의
+              {isHtml && …} 조건부 렌더와 대응.
+            -->
+            <bp-section data-state-ref="WIREFRAME__RENDERING" data-show="HTML 뷰어" class="flex items-center gap-2">
+              <bp-button variant="ghost" size="icon" aria-label="코멘트" data-element="💬 코멘트 버튼">
+                <bp-icon name="message-circle" size="sm"></bp-icon>
+              </bp-button>
+              <bp-separator orientation="vertical" class="h-5"></bp-separator>
+            </bp-section>
+
+            <bp-section data-feature="VERSION__TAG" data-label="버전 드롭다운">
+              <bp-description>
+                <bp-description-element name="버전 드롭다운">
+                  Git 태그 기반 버전 선택. shadcn Select 사용.<br />
+                  · "최신 (미발행)"이 분리선 위에 단독 배치<br />
+                  · "발행된 버전" 라벨 아래 태그 목록 (예: v1.2, v1.1, v1.0)<br />
+                  · 현재 선택된 버전 하이라이트<br />
+                  · 버전 선택 시 URL `?version` 파라미터 변경 → 뷰어·코멘트 갱신
+                </bp-description-element>
+              </bp-description>
+              <bp-select value="latest" data-element="버전 드롭다운">
+                <bp-select-trigger class="w-40">
+                  <bp-select-value placeholder="버전 선택"></bp-select-value>
+                </bp-select-trigger>
+                <bp-select-content>
+                  <bp-select-item value="latest">최신 (미발행)</bp-select-item>
+                  <bp-select-group>
+                    <bp-select-label>발행된 버전</bp-select-label>
+                    <bp-select-item value="v1.2">v1.2</bp-select-item>
+                    <bp-select-item value="v1.1">v1.1</bp-select-item>
+                    <bp-select-item value="v1.0">v1.0</bp-select-item>
+                  </bp-select-group>
+                </bp-select-content>
+              </bp-select>
+            </bp-section>
+
+            <bp-section data-feature="VERSION__PUBLISH" data-label="버전 발행">
+              <bp-description>
+                <bp-description-element name="발행 버튼">
+                  현재 상태를 Git 태그로 발행. 클릭 시 [버전 발행 다이얼로그](./dialog_version-publish.md) 열림.<br />
+                  · 활성 조건: "최신(미발행)" 선택 + HEAD SHA ≠ last_published_sha<br />
+                  · 비활성 조건: 과거 버전 열람 중, 또는 변경 없음<br />
+                  · 별도 뱃지 없이 활성/비활성 상태로만 변경 신호 전달
+                </bp-description-element>
+              </bp-description>
+              <bp-button variant="default" size="sm" data-element="발행 버튼">
+                <bp-icon name="tag" size="xs"></bp-icon>
+                발행
+              </bp-button>
+            </bp-section>
+
+            <bp-button variant="ghost" size="icon" aria-label="프로젝트 설정" data-element="설정 아이콘">
+              <bp-icon name="settings" size="sm"></bp-icon>
+            </bp-button>
+          </div>
+        </div>
+      </bp-page-header>
+
+      <!-- ============================================================ -->
+      <!-- 본문 — bp-page-content 안에 IDE 2-col 레이아웃               -->
+      <!-- ============================================================ -->
+      <bp-page-content class="!p-0">
+        <div class="flex h-full" style="height: calc(100vh - 64px);">
+
+          <!-- ── 파일 트리 (area_file-tree) ────────────────────────── -->
+          <aside class="w-60 shrink-0 border-r overflow-y-auto bg-background flex flex-col">
+            <!-- 프로젝트 헤더 (사이드바 상단 고정) -->
+            <div data-element="프로젝트 헤더" class="flex items-center gap-2 p-3 border-b shrink-0">
+              <bp-button variant="ghost" size="icon" aria-label="프로젝트 목록으로">
+                <bp-icon name="arrow-left" size="sm"></bp-icon>
+              </bp-button>
+              <span class="font-semibold truncate">commerce-app</span>
+            </div>
+
+            <bp-section data-feature="WIREFRAME__RECOGNITION" data-label="파일 트리" class="flex-1 overflow-y-auto">
+              <bp-description>
+                <bp-description-element name="그룹 헤더" data-hide="로딩 중">
+                  1-depth 폴더 = 그룹명(한글 가능). `▾/▸` 클릭으로 접기/펼치기 토글.<br />
+                  · 현재 선택된 화면이 속한 그룹은 자동으로 펼쳐짐<br />
+                  · 접힌 상태는 세션 동안 유지됨
+                </bp-description-element>
+                <bp-description-element name="화면 항목" data-hide="로딩 중">
+                  폴더명 클릭 시 URL이 `/projects/[id]/screens/[screenId]`로 변경되고 중앙 뷰어 갱신.
+                </bp-description-element>
+                <bp-description-element name="파일 타입 아이콘" data-hide="로딩 중">
+                  · `.html` → 오렌지 배경 아이콘 (와이어프레임)<br />
+                  · `.md` → 블루 배경 아이콘 (화면명세)<br />
+                  · 그 외 → 트리에서 숨김 (이미지·JSON 등 미표시)
+                </bp-description-element>
+                <bp-description-element name="현재 선택 표시" data-hide="로딩 중">
+                  활성 화면을 배경색·볼드로 시각적 구분. URL의 screenId와 동기화.
+                </bp-description-element>
+                <bp-description-element name="로딩 스켈레톤" data-show="로딩 중">
+                  파일 트리 fetch 중 영역을 가리는 스켈레톤 플레이스홀더.<br />
+                  · GitHub Contents API 응답 대기 시 노출<br />
+                  · 응답 도착 시 실제 트리로 교체
+                </bp-description-element>
+                <bp-description-note>
+                  <li>그룹 자체가 화면일 수 있음 (screen.md/wireframe.html + 하위 화면 폴더 동시 보유)</li>
+                  <li>검색 기능 미지원 — 알파벳순 + 접기/펼치기로 탐색</li>
+                </bp-description-note>
+              </bp-description>
+
+              <!-- 트리 (기본) -->
+              <div data-hide="로딩 중" class="p-2 text-sm">
+                <div class="flex items-center gap-1 px-2 py-1.5 cursor-pointer rounded hover:bg-muted" data-element="그룹 헤더">
+                  <bp-icon name="chevron-down" size="xs"></bp-icon>
+                  <span class="font-medium">상품</span>
+                </div>
+                <div class="ml-3 border-l pl-2">
+                  <div class="flex items-center gap-1 px-2 py-1 cursor-pointer rounded hover:bg-muted">
+                    <bp-icon name="chevron-down" size="xs"></bp-icon>
+                    <span>PRODUCT-LIST</span>
+                  </div>
+                  <div class="ml-3 border-l pl-2">
+                    <div
+                      data-element="현재 선택 표시"
+                      class="flex items-center gap-2 px-2 py-1 rounded font-medium"
+                      style="background: var(--muted);"
+                    >
+                      <span data-element="파일 타입 아이콘" class="inline-flex w-4 h-4 items-center justify-center rounded text-[10px] font-bold text-white" style="background: #f97316;">H</span>
+                      wireframe.html
+                    </div>
+                    <div data-element="화면 항목" class="flex items-center gap-2 px-2 py-1 rounded hover:bg-muted">
+                      <span data-element="파일 타입 아이콘" class="inline-flex w-4 h-4 items-center justify-center rounded text-[10px] font-bold text-white" style="background: #3b82f6;">M</span>
+                      screen.md
+                    </div>
+                    <div data-element="화면 항목" class="flex items-center gap-2 px-2 py-1 rounded hover:bg-muted">
+                      <span data-element="파일 타입 아이콘" class="inline-flex w-4 h-4 items-center justify-center rounded text-[10px] font-bold text-white" style="background: #3b82f6;">M</span>
+                      area_card-grid.md
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1 px-2 py-1 cursor-pointer rounded hover:bg-muted">
+                    <bp-icon name="chevron-right" size="xs"></bp-icon>
+                    <span>PRODUCT-DETAIL</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1 px-2 py-1.5 mt-1 cursor-pointer rounded hover:bg-muted">
+                  <bp-icon name="chevron-right" size="xs"></bp-icon>
+                  <span class="font-medium">공통</span>
+                </div>
+
+                <div class="flex items-center gap-1 px-2 py-1.5 mt-1 cursor-pointer rounded hover:bg-muted">
+                  <bp-icon name="chevron-right" size="xs"></bp-icon>
+                  <span class="font-medium text-muted-foreground">미분류</span>
+                </div>
+              </div>
+
+              <!-- 로딩 상태: 스켈레톤 -->
+              <div data-element="로딩 스켈레톤" data-show="로딩 중" class="p-3 space-y-2">
+                <bp-skeleton class="h-5 w-32"></bp-skeleton>
+                <bp-skeleton class="h-4 w-28 ml-3"></bp-skeleton>
+                <bp-skeleton class="h-4 w-24 ml-3"></bp-skeleton>
+                <bp-skeleton class="h-5 w-24 mt-2"></bp-skeleton>
+              </div>
+            </bp-section>
+          </aside>
+
+          <!-- ── 뷰어 (area_viewer) ──────────────────────────────────── -->
+          <main class="flex-1 flex flex-col overflow-hidden">
+            <bp-section
+              data-feature="WIREFRAME__RENDERING"
+              data-label="뷰어"
+              class="flex-1 flex flex-col overflow-hidden"
+            >
+              <!--
+                상태 트리:
+                  기본 ← DEFAULT. 파일 선택 안내 (좌측 트리에서 아무것도 선택 안한 초기 상태)
+                  HTML 뷰어 (alt) — *.html 선택 시. iframe + 핀 오버레이
+                  MD 뷰어 (alt) — *.md 선택 시. 마크다운 렌더
+                  로딩 중 (alt)
+                  로딩 실패 (alt)
+                  빈 프로젝트 (alt)
+              -->
+              <bp-description>
+                <bp-description-element name="파일 선택 안내" data-hide="HTML 뷰어, MD 뷰어, 로딩 중, 로딩 실패, 빈 프로젝트">
+                  파일이 선택되지 않은 초기 상태의 안내. 실 서비스에선 `/projects/[id]` 진입 시 첫 화면으로 자동 리다이렉트되므로 거의 노출되지 않는다.
+                </bp-description-element>
+                <bp-description-element name="💬 코멘트 버튼" data-show="HTML 뷰어">
+                  탑바 우측 — 버전 드롭다운 앞에 배치 (DOM도 탑바).<br />
+                  · `*.html` 파일 선택 시에만 노출 — `data-state-ref="WIREFRAME__RENDERING"`으로 뷰어 상태 참조<br />
+                  · 클릭 시 [코멘트 시트](./sheet_comments.md) 토글<br />
+                  · 시트 열림 시 기능 영역 하이라이트 활성화 (별도 와이어프레임으로 표현 예정)
+                </bp-description-element>
+                <bp-description-element name="와이어프레임 iframe" data-show="HTML 뷰어">
+                  `&lt;iframe sandbox="allow-scripts" srcdoc="..."&gt;`로 격리 렌더링.<br />
+                  · `allow-same-origin` 사용 금지 (sandbox 무력화 방지)<br />
+                  · 브릿지 스크립트가 `&lt;/body&gt;` 앞에 주입됨<br />
+                  · iframe 높이는 `bp:resize` postMessage로 자동 동기화<br />
+                  · 1MB 초과 파일은 Contents API `raw` 미디어 타입으로 요청 (최대 100MB)
+                </bp-description-element>
+                <bp-description-element name="핀 뱃지" data-show="HTML 뷰어">
+                  iframe 위 absolute positioned 레이어에 렌더되는 코멘트 핀. 규칙은 [COMMENT.md#pin](../../../features/COMMENT.md#pin-핀-좌표-관리) 참조.<br />
+                  · 좌표는 feature div 기준 비율(0~1) — 화면 크기 무관<br />
+                  · 기본 `pointer-events: none` (iframe 내부 인터랙션 허용), 뱃지 자체만 `pointer-events: auto`<br />
+                  · 뱃지 클릭 시 [코멘트 시트](./sheet_comments.md)에서 해당 코멘트 하이라이트<br />
+                  · 변형: 미해결(default)·해결(secondary) 색상 구분
+                </bp-description-element>
+                <bp-description-element name="MD 렌더러" data-show="MD 뷰어">
+                  `*.md` 파일 선택 시 활성. react-markdown + remark-gfm로 마크다운 렌더링.<br />
+                  · 테이블·코드 블록 등 GFM 문법 지원<br />
+                  · 핀 오버레이 숨김 (코멘트는 .html 파일에만 가능 — 탑바 💬 버튼도 비활성)<br />
+                  · 화면명세(`screen.md`, `area_*.md`)·기능명세(`features/*.md`)·플로우(`flows/*.md`)에 공통 사용
+                </bp-description-element>
+                <bp-description-element name="로딩 스켈레톤" data-show="로딩 중">
+                  파일 fetch 중 뷰어 영역을 가리는 스켈레톤 플레이스홀더.<br />
+                  · GitHub Contents API 응답 + 브릿지 스크립트 주입이 끝나기 전까지 노출<br />
+                  · iframe 높이·rect 계산 완료 시 실제 뷰어로 교체
+                </bp-description-element>
+                <bp-description-element name="로딩 실패 안내" data-show="로딩 실패">
+                  파일 fetch 실패 시 뷰어 자리에 표시되는 에러 안내.<br />
+                  · 원인(네트워크 오류, 권한 박탈, 저장소 삭제 등)에 관계없이 동일 UI<br />
+                  · "다시 시도" 버튼 — 클릭 시 현재 screenId·파일로 재fetch<br />
+                  · 반복 실패 시 사용자에게 프로젝트 설정/권한 확인 유도 (추후)
+                </bp-description-element>
+                <bp-description-element name="빈 프로젝트 안내" data-show="빈 프로젝트">
+                  프로젝트 저장소의 `docs/screens/` 아래 유효한 화면이 하나도 없을 때 노출.<br />
+                  · 플러그인 사용법 링크로 유도 (외부 링크 — 새 탭)<br />
+                  · 플러그인으로 화면 생성 후 push하면 실시간으로 파일 트리·뷰어 갱신됨 (새로고침 불필요)
+                </bp-description-element>
+                <bp-description-note>
+                  <li>origin 검증: `event.origin === 'null'` (sandbox iframe은 null origin)</li>
+                  <li>feature div 크기가 줄어서 핀 좌표가 범위 밖이면 최대값으로 클램핑</li>
+                  <li>featureId가 현재 와이어프레임에 없는 이월 코멘트는 핀 미표시 (시트 목록에서만 "삭제된 기능" 표시)</li>
+                </bp-description-note>
+              </bp-description>
+
+              <!-- 기본 placeholder — 파일 선택 안내 (실 서비스에선 첫 화면 자동 선택) -->
+              <div data-element="파일 선택 안내" data-hide="HTML 뷰어, MD 뷰어, 로딩 중, 로딩 실패, 빈 프로젝트" class="flex-1 flex items-center justify-center p-8" style="background: var(--muted);">
+                <bp-empty class="max-w-md">
+                  <bp-empty-media>
+                    <bp-icon name="mouse-pointer-click" size="xl"></bp-icon>
+                  </bp-empty-media>
+                  <bp-empty-title>파일을 선택하세요</bp-empty-title>
+                  <bp-empty-description>
+                    좌측 트리에서 .html 또는 .md 파일을 클릭하면 뷰어가 열립니다.
+                  </bp-empty-description>
+                </bp-empty>
+              </div>
+
+              <!-- HTML 뷰어 — *.html 선택 시 (iframe + 핀 오버레이) -->
+              <div data-show="HTML 뷰어" class="flex-1 overflow-auto p-6 relative" style="background: var(--muted);">
+                <div class="relative mx-auto" style="max-width: 1100px;">
+                  <div data-element="와이어프레임 iframe" class="bg-background border rounded shadow-sm">
+                    <div class="flex items-center justify-between p-4 border-b">
+                      <span class="font-semibold">commerce-app</span>
+                      <bp-icon name="user" size="sm"></bp-icon>
+                    </div>
+                    <div class="p-6 space-y-4">
+                      <bp-image aspect-ratio="3/1" rounded></bp-image>
+                      <div class="grid grid-cols-3 gap-3">
+                        <bp-image aspect-ratio="1/1" rounded></bp-image>
+                        <bp-image aspect-ratio="1/1" rounded></bp-image>
+                        <bp-image aspect-ratio="1/1" rounded></bp-image>
+                      </div>
+                      <bp-skeleton class="h-4 w-3/4"></bp-skeleton>
+                      <bp-skeleton class="h-4 w-1/2"></bp-skeleton>
+                    </div>
+                  </div>
+
+                  <!-- ── 핀 오버레이 (HTML 뷰어 하위 UI) ─────────────── -->
+                  <div class="absolute inset-0 pointer-events-none">
+                    <bp-badge variant="default" data-element="핀 뱃지" class="absolute pointer-events-auto" style="top: 80px; left: 60px;">
+                      📌 GNB 메뉴 잘림
+                    </bp-badge>
+                    <bp-badge variant="default" data-element="핀 뱃지" class="absolute pointer-events-auto" style="top: 280px; left: 250px;">
+                      📌 검색 필터 추가
+                    </bp-badge>
+                    <bp-badge variant="secondary" data-element="핀 뱃지" class="absolute pointer-events-auto" style="top: 280px; right: 120px;">
+                      📌 카드 레이아웃
+                    </bp-badge>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MD 뷰어 — *.md 선택 시 (마크다운 렌더) -->
+              <div data-element="MD 렌더러" data-show="MD 뷰어" class="flex-1 overflow-auto bg-background p-8">
+                <div class="prose max-w-3xl mx-auto">
+                  <h1>상품 목록</h1>
+                  <p class="text-muted-foreground">라우트: <code>/products</code></p>
+                  <h2>화면 구성</h2>
+                  <p>상단 좌측에 상품 카드 그리드, 우측에 필터 패널이 배치된다.</p>
+                  <h2>상태</h2>
+                  <bp-table>
+                    <bp-table-header>
+                      <bp-table-row>
+                        <bp-table-head>상태</bp-table-head>
+                        <bp-table-head>표현</bp-table-head>
+                      </bp-table-row>
+                    </bp-table-header>
+                    <bp-table-body>
+                      <bp-table-row>
+                        <bp-table-cell>로딩 중</bp-table-cell>
+                        <bp-table-cell>스켈레톤</bp-table-cell>
+                      </bp-table-row>
+                      <bp-table-row>
+                        <bp-table-cell>정상</bp-table-cell>
+                        <bp-table-cell>카드 그리드</bp-table-cell>
+                      </bp-table-row>
+                    </bp-table-body>
+                  </bp-table>
+                </div>
+              </div>
+
+              <!-- 로딩 -->
+              <div data-element="로딩 스켈레톤" data-show="로딩 중" class="flex-1 flex items-center justify-center" style="background: var(--muted);">
+                <div class="space-y-3 w-full max-w-3xl p-6">
+                  <bp-skeleton class="h-12 w-full"></bp-skeleton>
+                  <bp-skeleton class="h-64 w-full"></bp-skeleton>
+                  <bp-skeleton class="h-32 w-full"></bp-skeleton>
+                </div>
+              </div>
+
+              <!-- 로딩 실패 -->
+              <div data-element="로딩 실패 안내" data-show="로딩 실패" class="flex-1 flex items-center justify-center p-8">
+                <bp-empty class="max-w-md">
+                  <bp-empty-media>
+                    <bp-icon name="triangle-alert" size="xl"></bp-icon>
+                  </bp-empty-media>
+                  <bp-empty-title>와이어프레임을 불러올 수 없습니다</bp-empty-title>
+                  <bp-empty-description>
+                    GitHub에서 파일을 가져오는 중 오류가 발생했습니다.
+                  </bp-empty-description>
+                  <bp-empty-content>
+                    <bp-button variant="outline">
+                      <bp-icon name="refresh-cw" size="sm"></bp-icon>
+                      다시 시도
+                    </bp-button>
+                  </bp-empty-content>
+                </bp-empty>
+              </div>
+
+              <!-- 빈 프로젝트 -->
+              <div data-element="빈 프로젝트 안내" data-show="빈 프로젝트" class="flex-1 flex items-center justify-center p-8">
+                <bp-empty class="max-w-md">
+                  <bp-empty-media>
+                    <bp-icon name="folder-open" size="xl"></bp-icon>
+                  </bp-empty-media>
+                  <bp-empty-title>와이어프레임이 없습니다</bp-empty-title>
+                  <bp-empty-description>
+                    플러그인으로 와이어프레임을 생성한 후 GitHub에 push해주세요.
+                  </bp-empty-description>
+                  <bp-empty-content>
+                    <bp-button variant="outline">
+                      <bp-icon name="external-link" size="sm"></bp-icon>
+                      플러그인 사용법 보기
+                    </bp-button>
+                  </bp-empty-content>
+                </bp-empty>
+              </div>
+            </bp-section>
+          </main>
+        </div>
+      </bp-page-content>
+    </bp-page>
+
+    <bp-screen-description>
+      <bp-description-purpose>
+        프로젝트의 와이어프레임을 열람하고 핀 코멘트로 피드백하며 화면명세를 확인하는 핵심 작업 화면.
+      </bp-description-purpose>
+      <bp-description-rules>
+        <li>2패널 레이아웃 — 좌측 사이드바(240px 고정) + 중앙 뷰어(flex). 데스크톱 전용</li>
+        <li>각 패널은 독립적으로 스크롤된다</li>
+        <li>중앙 뷰어의 iframe 안에는 와이어프레임 UI + 우측 설명 레일이 함께 렌더됨 (HTML 자체에 임베드)</li>
+        <li>버전 선택 시 URL `?version` 변경 → 와이어프레임·코멘트 갱신. 과거 버전은 새 핀 생성 불가</li>
+        <li>화면 전환 시 Realtime 채널 교체: `project:{id}:screen:{screenId}`</li>
+        <li>와이어프레임 push 시 Broadcast(`wireframe:updated`)로 토스트 알림. 자동 새로고침 안 함</li>
+        <li>`/projects/[id]`로 접근 시 첫 번째 화면으로 자동 리다이렉트</li>
+        <li>비로그인·collaborator 아닌 경우 권한 없음 화면으로 분기</li>
+      </bp-description-rules>
+    </bp-screen-description>
+  </body>
+</html>
