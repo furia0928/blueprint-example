@@ -179,7 +179,7 @@ title: 프로젝트 목록
       <bp-area>
         <bp-fragment id="grid-empty" title="빈 목록" description="프로젝트 0개 — 예제 안내">
           <bp-section data-feature="PROJECT__INFO" data-label="프로젝트 카드 그리드">
-            <div class="flex justify-center py-8" style="background: var(--muted);">
+            <div data-element="빈 목록" class="flex justify-center py-8" style="background: var(--muted);">
               <bp-empty class="max-w-md">
                 <bp-empty-media>
                   <bp-icon name="folder-plus" size="xl"></bp-icon>
@@ -207,7 +207,7 @@ title: 프로젝트 목록
 
         <bp-fragment id="grid-api-error" title="GitHub API 에러" description="저장소 정보 fetch 실패">
           <bp-section data-feature="PROJECT__INFO" data-label="프로젝트 카드 그리드">
-            <div class="py-6">
+            <div data-element="GitHub API 에러" class="py-6">
               <bp-alert variant="destructive">
                 <bp-alert-title>저장소 정보를 불러올 수 없습니다</bp-alert-title>
                 <bp-alert-description>
